@@ -20,14 +20,8 @@ class Vec3:
       self.z = x.z
     else:
       self.x = x
-      if y is None:
-        self.y = x
-      else:
-        self.y = y
-      if z is None:
-        self.z = x
-      else:
-        self.z = z
+      self.y = x if y is None else y
+      self.z = x if z is None else z
 
   def __repr__(self):
     return "Vec3(%.6e,%.6e,%.6e)" % (self.x, self.y, self.z)

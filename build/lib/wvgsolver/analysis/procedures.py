@@ -8,9 +8,7 @@ import numpy as np
 class FrequencySpectrum(Analysis):
   def __init__(self, bbox, freqs, nmonitors=5, start_time=0):
     self.nmonitors = nmonitors
-    self.monitor_names = []
-    for i in range(self.nmonitors):
-      self.monitor_names.append(randstring())
+    self.monitor_names = [randstring() for _ in range(self.nmonitors)]
     self.bbox = bbox
     self.freqs = freqs
     self.start_time = start_time
@@ -133,16 +131,8 @@ class WaveProfile(Analysis):
     self.index_monitor = randstring()
   
   def _setup_lumerical(self, sess):
-    index_map = {}
-    index_map[AXIS_X] = 1
-    index_map[AXIS_Y] = 2
-    index_map[AXIS_Z] = 3
-
-    time_map = {}
-    time_map[AXIS_X] = 5
-    time_map[AXIS_Y] = 6
-    time_map[AXIS_Z] = 7
-
+    index_map = {AXIS_X: 1, AXIS_Y: 2, AXIS_Z: 3}
+    time_map = {AXIS_X: 5, AXIS_Y: 6, AXIS_Z: 7}
     time = sess.fdtd.addtime(name=self.time_monitor, monitor_type=time_map[self.axis], x=self.bbox.pos.x, y=self.bbox.pos.y,
       z=self.bbox.pos.z, output_Hx=False, output_Hy=False, output_Hz=False)
     time.stop_method = 2
@@ -179,11 +169,7 @@ class WaveProfile(Analysis):
     tm = self.time_monitor
     im = self.index_monitor
 
-    d_map = {}
-    d_map[AXIS_X] = ["y", "z"]
-    d_map[AXIS_Y] = ["x", "z"]
-    d_map[AXIS_Z] = ["x", "y"]
-
+    d_map = {AXIS_X: ["y", "z"], AXIS_Y: ["x", "z"], AXIS_Z: ["x", "y"]}
     script = """
     im = "%s";
     index_x = pinch(getdata(im, "index_x"));
@@ -228,18 +214,14 @@ class SideWavePower(Analysis):
     self.monitor_name = randstring()
 
   def _setup_lumerical(self, sess):
-    type_map = {}
-    type_map[AXIS_X] = 5
-    type_map[AXIS_Y] = 6
-    type_map[AXIS_Z] = 7
-
+    type_map = {AXIS_X: 5, AXIS_Y: 6, AXIS_Z: 7}
     time = sess.fdtd.addtime(name=self.monitor_name, monitor_type=type_map[self.axis], x=self.bbox.pos.x,
        y=self.bbox.pos.y, z=self.bbox.pos.z, output_Ex=False, output_Ey=False, output_Hx=False,
        output_Hy=False, output_Hz=False, output_Ez=False, output_power=True)
     time.stop_method = 2
     time.start_time = self.start_time
     time.stop_time = self.start_time + 1/self.target_freq
-    
+
     if self.axis == AXIS_X:
       time.x = time.x + self.side * self.bbox.size.x / 2
       time.y_span = self.bbox.size.y
@@ -272,11 +254,7 @@ class Transmission(Analysis):
     self.monitor_name = randstring()
 
   def _setup_lumerical(self, sess):
-    type_map = {}
-    type_map[AXIS_X] = 5
-    type_map[AXIS_Y] = 6
-    type_map[AXIS_Z] = 7
-
+    type_map = {AXIS_X: 5, AXIS_Y: 6, AXIS_Z: 7}
     power = sess.fdtd.addpower(name=self.monitor_name, monitor_type=type_map[self.axis], x=self.bbox.pos.x,
        y=self.bbox.pos.y, z=self.bbox.pos.z, output_Ex=False, output_Ey=False, output_Hx=False,
        output_Hy=False, output_Hz=False, output_Ez=False, output_power=True, output_Px=False, output_Py=False,
@@ -285,7 +263,7 @@ class Transmission(Analysis):
     power.wavelength_center = C_LIGHT / self.target_freq
     power.wavelength_span = C_LIGHT / (self.target_freq - 0.5*self.freq_span) - C_LIGHT / (self.target_freq + 0.5*self.freq_span)
     power.frequency_points = self.freq_points
-    
+
     if self.axis == AXIS_X:
       power.x = power.x + self.side * self.bbox.size.x / 2
       power.y_span = self.bbox.size.y

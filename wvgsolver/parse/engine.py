@@ -45,10 +45,8 @@ class LumericalFSPFile(EngineSpecificParser, SessionResult):
       self.engine.open_fsp(self.data[1])
     elif self.data[0]:
       with tempfile.TemporaryDirectory() as d:
-        fp = open(os.path.join(d, "simulation.fsp"), "wb")
-        fp.write(self.data[0])
-        fp.close()
-        
+        with open(os.path.join(d, "simulation.fsp"), "wb") as fp:
+          fp.write(self.data[0])
         self.engine.open_fsp(fp.name)
     else:
       raise ValueError("No fsp data or file path found")

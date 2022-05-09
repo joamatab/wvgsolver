@@ -56,9 +56,7 @@ class UnitCell(SimulationObject):
       copy2_s = s.copy()
       copy1_s.pos.x -= self._size.x / 2
       copy2_s.pos.x += self._size.x / 2
-      structures.append(copy1_s)
-      structures.append(copy2_s)
-
+      structures.extend((copy1_s, copy2_s))
     return structures
   
   def get_size(self):
@@ -108,7 +106,7 @@ class UnitCell(SimulationObject):
 
   def _simulate_bandstructure(self, sess, ks=(0, 0.5, 20), freqs=(0.2e15, 0.6e15, 100000), run_time=600e-15, \
     window_pos=0.5, TEonly=True, ndipoles=5, dipole_region=Vec3(1, 0, 0), dipole_directions=Vec3(0, 1, 0), \
-    sim_size=3, analyze_region=0.1): 
+    sim_size=3, analyze_region=0.1):
     """Simulate the bandstructure of this unit cell by calculating the frequency domain left after an
     electric dipole pulse is allowed to dissipate through an infinite (implemented using boundary conditions)
     array of this unit cell, over a range of values for the wave vector.
@@ -159,7 +157,7 @@ class UnitCell(SimulationObject):
     """
     ks = np.linspace(*ks)
     freqs = np.linspace(*freqs)
-    
+
     sim_size = self._size*sim_size
     sim_size.x = self._size.x
 
@@ -174,7 +172,7 @@ class UnitCell(SimulationObject):
       k = ks[s]
       sess.set_sim_region(boundaries={ "x": { "type": "bloch", "k": k } })
       dipoles = []
-      for i in range(ndipoles):
+      for _ in range(ndipoles):
         r = np.random.random_sample((3, )) - 0.5
         pos = Vec3(r[0], 0.5*(r[1] + 0.5) if TEonly else r[1], r[2]) * self._size * dipole_region
         d = 2*(np.random.random_sample((3,)) - 0.5)
@@ -187,7 +185,7 @@ class UnitCell(SimulationObject):
       ), freqs))
       output[s,:] = sweep[:,0]
       logging.info("Sweep %d/%d completed (k=%f)" % (s + 1, nsweeps, k))
-    
+
     return Bandstructure(output, (ks, freqs, self._size.x))
 
 class Waveguide(SimulationObject):
@@ -264,7 +262,7 @@ class Waveguide(SimulationObject):
       "z": BBox(Vec3(0), size * sim_size)
     }
     if isinstance(bboxes, BBox):
-      for a in tbboxes.keys():
+      for a in tbboxes:
         tbboxes[a] = bboxes
     elif isinstance(bboxes, dict):
       for a, b in enumerate(bboxes):
@@ -359,16 +357,16 @@ class Cavity1D(Waveguide):
   def get_structures(self, sim_type=None):
     if len(self._unit_cells) < 1:
       return [ s.copy() for s in self._structures ]
-    
+
     center_cell = self._center_cell
     if center_cell is None:
-      center_cell = int(len(self._unit_cells) / 2) - 1
+      center_cell = len(self._unit_cells) // 2 - 1
 
     center_shift = self._center_shift
     if center_shift is None:
       center_shift = 0
       if len(self._unit_cells) % 2 == 1:
-        center_shift = -self._unit_cells[int(len(self._unit_cells) / 2)].get_size().x / 2
+        center_shift = -self._unit_cells[len(self._unit_cells) // 2].get_size().x / 2
 
     structs = []
     offset = Vec3(0)

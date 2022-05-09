@@ -87,7 +87,7 @@ class DielectricExtrusionFaceGDSParser(ObjectGDSParser):
         logging.warn("Skipping object %s because it's not a polygon" % s)
         continue
       if not isinstance(s.material, DielectricMaterial):
-        logging.warn("Skipping object %s because its material is not a dielectric" % s)
+        logging.warn(f"Skipping object {s} because its material is not a dielectric")
         continue
       polys.append({
         "poly": gdspy.Polygon(((np.array(s.verts) + np.array([s.pos.x, s.pos.y])) / self.scale) - origin[:2]),
@@ -98,12 +98,12 @@ class DielectricExtrusionFaceGDSParser(ObjectGDSParser):
 
     if polys:
       totalpoly = gdspy.PolygonSet([])
-      for pidx in range(len(polys)):
-        op = "or" if polys[pidx]["struct"].material.nindex > 1  else "not"
+      for poly in polys:
+        op = "or" if poly["struct"].material.nindex > 1 else "not"
         if self.invert:
           op = "not" if op == "or" else "or"
-        totalpoly = gdspy.boolean(totalpoly, polys[pidx]["poly"], op)
-      
+        totalpoly = gdspy.boolean(totalpoly, poly["poly"], op)
+
       if totalpoly:
         self.polygonset = totalpoly
         self.device.add_polygon(totalpoly)
@@ -118,18 +118,14 @@ class DielectricConvexSliceGDSParser(ObjectGDSParser):
   2D slice. 
   """
   def _parse(self):
-    axis_map = {}
-    axis_map[AXIS_X] = 0
-    axis_map[AXIS_Y] = 1
-    axis_map[AXIS_Z] = 2
-
+    axis_map = {AXIS_X: 0, AXIS_Y: 1, AXIS_Z: 2}
     structs = self.data.get_structures()
 
     polys = []
     origin = np.array(self.origin) / self.scale
     for s in structs:
       if not isinstance(s.material, DielectricMaterial):
-        logging.warn("Skipping object %s because its material is not a dielectric" % s)
+        logging.warn(f"Skipping object {s} because its material is not a dielectric")
         continue
       idxs = [ i for i in range(3) if axis_map[self.axis] != i]
       intersection = (
@@ -141,23 +137,23 @@ class DielectricConvexSliceGDSParser(ObjectGDSParser):
       ).tolist()
       hull = shapely.geometry.MultiLineString(intersection).convex_hull
       if not isinstance(hull, shapely.geometry.Polygon):
-        logging.warn("Skipping object %s because its convex hull is not a polygon" % s)
+        logging.warn(f"Skipping object {s} because its convex hull is not a polygon")
         continue
       polys.append({
-        "poly": gdspy.Polygon(list(hull.exterior.coords)[0:-1]),
-        "struct": s
+          "poly": gdspy.Polygon(list(hull.exterior.coords)[:-1]),
+          "struct": s
       })
 
     polys.sort(reverse=True, key=lambda p: p["struct"].material.order)
 
     if polys:
       totalpoly = gdspy.PolygonSet([])
-      for pidx in range(len(polys)):
-        op = "or" if polys[pidx]["struct"].material.nindex > 1  else "not"
+      for poly in polys:
+        op = "or" if poly["struct"].material.nindex > 1 else "not"
         if self.invert:
           op = "not" if op == "or" else "or"
-        totalpoly = gdspy.boolean(totalpoly, polys[pidx]["poly"], op)
-      
+        totalpoly = gdspy.boolean(totalpoly, poly["poly"], op)
+
       if totalpoly:
         self.polygonset = totalpoly
         self.device.add_polygon(totalpoly)

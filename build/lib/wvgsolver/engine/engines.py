@@ -77,7 +77,7 @@ class LumericalEngine(Engine):
       base_path = ""
       if sys.platform == "linux":
         base_path = "/opt/lumerical/"
-      elif sys.platform == "win32" or sys.platform == "cygwin":
+      elif sys.platform in ["win32", "cygwin"]:
         base_path = "C:\\Program Files\\Lumerical"
       elif sys.platform == "darwin":
         self.lumerical_path = "/Applications/Lumerical/FDTD Solutions/FDTD Solutions.app/Contents"

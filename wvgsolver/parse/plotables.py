@@ -67,8 +67,8 @@ class EField(Parser):
     ylabel = self.meta[1]
 
     if title is None:
-      title = "Electric field " + (xlabel + ylabel).upper() + " density profile"
-    
+      title = f"Electric field {(xlabel + ylabel).upper()} density profile"
+
     Ex, Ey, Ez, x, y, index = self.data
     E = Ex+ Ey + Ez
     fig, axs = plt.subplots(2, 2)
@@ -84,12 +84,12 @@ class EField(Parser):
       ax.set_aspect("equal")
       ax.get_yaxis().set_ticks_position("right")
       ax.get_yaxis().set_label_position("right")
-      ax.set_title(title + " (" + cname + ")")
+      ax.set_title(f"{title} ({cname})")
 
     plt.show()
   
   def __repr__(self):
-    return "EField(%s, %s)" % (self.meta[0], self.meta[1])
+    return f"EField({self.meta[0]}, {self.meta[1]})"
 
   def max_loc(self):
     Ex, Ey, Ez, x, y, index = self.data

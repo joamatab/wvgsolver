@@ -28,11 +28,7 @@ class ModeSource(Source):
     self.size = size
 
   def _add_lumerical(self, session):
-    axis_map = {}
-    axis_map[AXIS_X] = 1
-    axis_map[AXIS_Y] = 2
-    axis_map[AXIS_Z] = 3
-
+    axis_map = {AXIS_X: 1, AXIS_Y: 2, AXIS_Z: 3}
     mode = session.fdtd.addmode(injection_axis=axis_map[self.axis], direction=2 if self.direction > 0 else 1, \
       amplitude=self.amplitude, phase=self.phase)
     self._config_freq_lumerical(mode)
