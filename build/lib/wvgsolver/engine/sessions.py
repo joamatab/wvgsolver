@@ -12,7 +12,7 @@ from ..parse.engine import LumericalFSPFile
 def lumericalLogFile(dir_path, name, stop):
   fps = {}
   while not stop.is_set():
-    for f in glob.iglob(os.path.join(dir_path, name + "*.log")):
+    for f in glob.iglob(os.path.join(dir_path, f"{name}*.log")):
       try:
         base_name = os.path.basename(f)
         log_name = base_name[len(name):base_name.index(".log")]
@@ -23,9 +23,8 @@ def lumericalLogFile(dir_path, name, stop):
           fps[f] = open(f, "r")
 
         while True:
-          line = fps[f].readline()
-          if line:
-            logging.info("[" + log_name + "] " + line.rstrip("\n\r"))
+          if line := fps[f].readline():
+            logging.info(f"[{log_name}] " + line.rstrip("\n\r"))
           else:
             break
       except Exception:
@@ -77,7 +76,7 @@ class LumericalSession(Session):
         os.mkdir(self.working_path)
 
     self.working_path = os.path.abspath(self.working_path)
-    self.save_path = os.path.join(self.working_path, self.name + ".fsp")
+    self.save_path = os.path.join(self.working_path, f"{self.name}.fsp")
     self.fsp_data = None
 
     self.fdtd = self.engine.lumapi.FDTD(hide=self.engine.hide)
@@ -144,24 +143,25 @@ class LumericalSession(Session):
 
     for key in boundaries.keys():
       if len(key) == 1:
-        val = boundaries[key] if not isinstance(boundaries[key], dict) else boundaries[key]["type"]
-        self.sim_region[key + " min bc"] = self.boundary_values_map[val]
+        val = (boundaries[key]["type"]
+               if isinstance(boundaries[key], dict) else boundaries[key])
+        self.sim_region[f"{key} min bc"] = self.boundary_values_map[val]
         if val == "bloch" and "k" in boundaries[key]:
           self.sim_region["set based on source angle"] = False
           self.sim_region["bloch units"] = 1
-          self.sim_region["k" + key] = boundaries[key]["k"]
+          self.sim_region[f"k{key}"] = boundaries[key]["k"]
         elif val != "periodic":
-          self.sim_region[key + " max bc"] = self.boundary_values_map[val]
+          self.sim_region[f"{key} max bc"] = self.boundary_values_map[val]
       else:
         mapped_key = self.boundary_keys_map[key]
-        min_key = mapped_key[0] + " min bc"
+        min_key = f"{mapped_key[0]} min bc"
         if self.sim_region[min_key] in [3, 6]:
           self.sim_region[min_key] = 1
         self.sim_region[mapped_key] = self.boundary_values_map[boundaries[key]]
   
   def _prerun(self):
     self.fdtd.switchtolayout()
-    for f in glob.iglob(os.path.join(self.working_path, self.name + "*.log")):
+    for f in glob.iglob(os.path.join(self.working_path, f"{self.name}*.log")):
       try:
         os.remove(f)
       except:
@@ -191,5 +191,6 @@ class LumericalSession(Session):
   
   def get_postrunres(self):
     if self.fsp_data or not self.temp_dir:
-      return LumericalFSPFile(self.fsp_data, self.save_path if not self.temp_dir else None, self.engine)
+      return LumericalFSPFile(
+          self.fsp_data, None if self.temp_dir else self.save_path, self.engine)
     return None

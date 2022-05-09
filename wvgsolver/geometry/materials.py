@@ -20,7 +20,7 @@ class DielectricMaterial(Material):
     self.nindex = nindex
 
   def __repr__(self):
-    return "DielectricMaterial(%s):%s" % (self.nindex, super().__repr__())
+    return f"DielectricMaterial({self.nindex}):{super().__repr__()}"
 
   def _add_lumerical(self, sess):
     if sess.fdtd.materialexists(self.name):

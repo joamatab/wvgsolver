@@ -17,7 +17,7 @@ class Geometry(EngineSpecific):
     return g
 
   def __repr__(self):
-    return "Geometry(%s)" % self.name
+    return f"Geometry({self.name})"
 
   def add(self, session):
     self.callImplementation("add", session)
@@ -85,7 +85,7 @@ class Structure(Geometry, ABC):
     pass
 
   def __repr__(self):
-    return "Structure(%s):%s" % (self.pos, super().__repr__())
+    return f"Structure({self.pos}):{super().__repr__()}"
 
 class Source(Geometry, ABC):
   def __init__(self, pos, frange, f, pulse_length, pulse_offset):

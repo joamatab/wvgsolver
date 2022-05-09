@@ -129,7 +129,7 @@ class SimulationObject(ABC):
     return []
   
   def _check_sim_type(self, t): 
-    sim_type = "_simulate_" + t
+    sim_type = f"_simulate_{t}"
     if not hasmethod(self, sim_type):
       raise NotImplementedError("simulation type '%s' not found for object '%s'" % \
         (t, type(self).__name__))
@@ -181,29 +181,25 @@ class SimulationObject(ABC):
     """
     if sim_type is None:
       return self._simulate_results
-  
+
     self._check_sim_type(sim_type)
 
-    if not sim_type in self._simulate_results:
+    if sim_type not in self._simulate_results:
       return []
-    if not kwargs:
-      res = self._simulate_results[sim_type]
-    else:
-      res =[
-        results for results in self._simulate_results[sim_type] if 
-          len(set(kwargs.items()) - set(results["kwargs"].items())) == 0
-      ]
-    
+    res = ([
+        results for results in self._simulate_results[sim_type]
+        if len(set(kwargs.items()) - set(results["kwargs"].items())) == 0
+    ] if kwargs else self._simulate_results[sim_type])
     if started_after is not None:
       res = filter(lambda r: r["start_t"] >= started_after, res)
     if started_before is not None:
       res = filter(lambda r: r["start_t"] <= started_before, res)
-    
+
     if ended_after is not None:
       res = filter(lambda r: r["end_t"] >= ended_after, res)
     if ended_before is not None:
       res = filter(lambda r: r["end_t"] <= ended_before, res)
-    
+
     if status is not None:
       res = filter(lambda r: r["status"] == status, res)
 

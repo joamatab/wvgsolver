@@ -3,6 +3,7 @@ This example creates a cavity, and performs a series of simulations on it, visua
 out the results of each simulation as it completes.
 """
 
+
 from wvgsolver import Cavity1D, UnitCell, Vec3
 from wvgsolver.geometry import BoxStructure, TriStructure, CylinderStructure, DielectricMaterial
 from wvgsolver.engine import LumericalEngine
@@ -40,13 +41,13 @@ for h_fn,a_fn in zip(hole_radii_fns,lat_const_fns):
   hole_radii /= 2
   lattice_constants = np.loadtxt(os.path.join(os.path.curdir, base_dir+a_fn), dtype=float, usecols=(0), unpack=False)
   # Unit cells are triangular prisms
-  
+
 
   unit_cells = []
   for ((radius_x,radius_y), lattice_constant) in zip(hole_radii,lattice_constants):
     cell_box = TriStructure(Vec3(0), Vec3(beam_width, apex_half_angle, lattice_constant), 
                           DielectricMaterial(2.4028, order=2), rot_angles=(np.pi/2, np.pi/2, 0))
-    
+
     cell_hole = CylinderStructure(Vec3(0), beam_height, radius_x, DielectricMaterial(1, order=1), radius2=radius_y)
     unit_cells += [UnitCell(structures=[ cell_box, cell_hole ], size=Vec3(lattice_constant,beam_width,beam_height), engine=engine)]
 
@@ -62,7 +63,7 @@ for h_fn,a_fn in zip(hole_radii_fns,lat_const_fns):
 
   # By setting the save path here, the cavity will save itself after each simulation to this file
   mirr_tag = a_fn[13:-4]
-  cavity.save("v0p4p2p2_"+mirr_tag+".obj")
+  cavity.save(f"v0p4p2p2_{mirr_tag}.obj")
 
   r1 = cavity.simulate("resonance", target_freq=target_frequency)
 
@@ -72,11 +73,10 @@ for h_fn,a_fn in zip(hole_radii_fns,lat_const_fns):
     1/(1/r1["qxmin"] + 1/r1["qxmax"]),
     1/(2/r1["qymax"] + 1/r1["qzmin"] + 1/r1["qzmax"])
   ))
-
 #   r1["xyprofile"].show()
 #   r1["yzprofile"].show()
 
-  cavity = Cavity1D(load_path="v0p4p2p2_"+mirr_tag+".obj",engine=engine)
+  cavity = Cavity1D(load_path=f"v0p4p2p2_{mirr_tag}.obj", engine=engine)
   r1 = cavity.get_results("resonance")[0]
   print(r1['res']["xyprofile"].max_loc())
   print(r1['res']["yzprofile"].max_loc())

@@ -8,7 +8,7 @@ class Engine(ABC):
     self.name = "abstract"
 
   def __repr__(self):
-    return "Engine(%s)" % self.name
+    return f"Engine({self.name})"
 
   @abstractmethod
   def new_session(self):

@@ -103,7 +103,7 @@ class BoxStructure(PolygonStructure):
     self.size = size
 
   def __repr__(self):
-    return "BoxStructure(%s):%s" % (self.size, super().__repr__())
+    return f"BoxStructure({self.size}):{super().__repr__()}"
 
 class CylinderStructure(PolygonStructure):
   """Represents an elliptical cylinder structure. Internally this is still a PolygonStructure,
@@ -181,4 +181,4 @@ class TriStructure(PolygonStructure):
     self.size = size
 
   def __repr__(self):
-    return "TriStructure(%s):%s" % (self.size, super().__repr__())
+    return f"TriStructure({self.size}):{super().__repr__()}"

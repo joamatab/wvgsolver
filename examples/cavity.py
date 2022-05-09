@@ -3,6 +3,7 @@ This example creates a cavity, and performs a series of simulations on it, visua
 out the results of each simulation as it completes.
 """
 
+
 from wvgsolver import Cavity1D, UnitCell, Vec3
 from wvgsolver.geometry import BoxStructure, CylinderStructure, DielectricMaterial
 from wvgsolver.engine import LumericalEngine
@@ -52,4 +53,4 @@ r2 = cavity.simulate("quasipotential", target_freq=target_frequency)
 r2.show()
 
 
-print("Guidedness: %s" % r3)
+print(f"Guidedness: {r3}")
